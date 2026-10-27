@@ -1,0 +1,2 @@
+"CFBundleDisplayName" = "NetDock";
+"NSLocalNetworkUsageDescription" = "NetDock accesses your local network to connect to and debug TCP/UDP devices and services you specify.";

@@ -1,0 +1,28 @@
+{
+  "fill" : {
+    "solid" : "srgb:1.00000,1.00000,1.00000,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "glass" : false,
+          "image-name" : "Network.png",
+          "name" : "Network"
+        }
+      ],
+      "name" : "Network",
+      "shadow" : {
+        "kind" : "none",
+        "opacity" : 0
+      },
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : "shared"
+  }
+}

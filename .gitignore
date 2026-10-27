@@ -1,0 +1,24 @@
+# macOS and editor state
+.DS_Store
+.idea/
+.vscode/
+
+# Xcode and SwiftPM generated files
+**/xcuserdata/
+*.xcuserstate
+.build/
+.swiftpm/
+DerivedData/
+build/
+build-*/
+*.xcresult/
+TestResults/
+
+# Local signing and configuration
+*.p12
+*.p8
+*.mobileprovision
+*.provisionprofile
+.env
+.env.*
+!.env.example

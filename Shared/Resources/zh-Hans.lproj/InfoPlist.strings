@@ -1,0 +1,2 @@
+"CFBundleDisplayName" = "NetDock";
+"NSLocalNetworkUsageDescription" = "NetDock 需要访问局域网，以便连接和调试您指定的 TCP/UDP 设备与服务。";
