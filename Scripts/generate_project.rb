@@ -13,12 +13,16 @@ end
 objects = {}
 add = ->(key, value) { objects[id(key)] = value; id(key) }
 shared = Dir['Shared/**/*.swift'].sort
-resources = ['Shared/Resources/Localizable.xcstrings', 'Shared/Resources/Assets.xcassets']
+resources = ['Shared/Resources/Localizable.xcstrings', 'Shared/Resources/Assets.xcassets', 'Shared/Resources/PrivacyInfo.xcprivacy']
 mac_icon = 'Shared/Resources/NetDockIcon.icon'
 platforms = { 'Mac' => 'macosx', 'Mobile' => 'iphoneos' }
 all_files = shared + resources + [mac_icon] + Dir['Apps/**/*.swift'] + Dir['Tests/NetDockUITests/*.swift']
 refs = all_files.map do |path|
-  type = path.end_with?('.swift') ? 'sourcecode.swift' : (path.end_with?('.xcstrings') ? 'text.json.xcstrings' : (path.end_with?('.icon') ? 'folder.iconcomposer' : 'folder.assetcatalog'))
+  type = {
+    '.swift' => 'sourcecode.swift', '.xcstrings' => 'text.json.xcstrings',
+    '.xcprivacy' => 'text.plist.xml', '.icon' => 'folder.iconcomposer',
+    '.xcassets' => 'folder.assetcatalog'
+  }.fetch(File.extname(path))
   add.call(path, "isa = PBXFileReference; lastKnownFileType = #{type}; path = #{q(path)}; sourceTree = SOURCE_ROOT;")
 end
 # Localized permission prompts are bundled using variant groups.
@@ -48,6 +52,7 @@ platforms.each do |suffix, sdk|
     settings = {
       'PRODUCT_NAME' => name, 'PRODUCT_BUNDLE_IDENTIFIER' => "org.netdock.#{suffix.downcase}",
       'SDKROOT' => sdk, 'SWIFT_VERSION' => '6.0', 'GENERATE_INFOPLIST_FILE' => 'YES',
+      'INFOPLIST_FILE' => 'Shared/Resources/App-Info.plist',
       'ASSETCATALOG_COMPILER_APPICON_NAME' => suffix == 'Mac' ? 'NetDockIcon' : 'AppIcon',
       'MARKETING_VERSION' => '0.1.0', 'CURRENT_PROJECT_VERSION' => '1',
       'INFOPLIST_KEY_CFBundleDisplayName' => 'NetDock', 'SWIFT_STRICT_CONCURRENCY' => 'complete',

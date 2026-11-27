@@ -4,6 +4,7 @@ import NetDockCore
 struct RootView: View {
     private enum SidebarSelection: Hashable {
         case session(UUID)
+        case dns
         #if os(macOS)
         case monitor
         #endif
@@ -19,94 +20,117 @@ struct RootView: View {
     var body: some View {
         @Bindable var app = app
         NavigationSplitView {
-            List(selection: $selection) {
-                Section(app.t("tools")) {
-                    ForEach(SessionMode.allCases, id: \.self) { mode in
-                        Button { createSession(mode) } label: {
-                            Label {
-                                Text(mode.title).foregroundStyle(.primary)
-                            } icon: {
-                                Image(systemName: sidebarSymbol(for: mode)).foregroundStyle(.tint)
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 5)
-                            .contentShape(Rectangle())
+            VStack(spacing: 0) {
+                HStack(spacing: 10) {
+                    Image("BrandMark")
+                        .resizable().scaledToFit()
+                        .frame(width: 36, height: 36)
+                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("NetDock").font(.title2.weight(.semibold))
+                        Text(app.t("networkWorkbench")).font(.callout).foregroundStyle(.secondary)
+                    }
+                    Spacer(minLength: 0)
+                }.padding(.horizontal, 20).padding(.top, 16).padding(.bottom, 12)
+                List(selection: $selection) {
+                    Section(app.t("sessions")) {
+                        if app.sessions.isEmpty {
+                            Text(app.t("noSessions")).font(.callout).foregroundStyle(.tertiary)
+                                .padding(.vertical, 4)
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityIdentifier("newSession.\(mode.rawValue)")
-                    }
-                    #if os(macOS)
-                    NavigationLink(value: SidebarSelection.monitor) {
-                        Label(app.t("connectionMonitor"), systemImage: "network")
-                            .padding(.vertical, 5)
-                    }
-                    .accessibilityIdentifier("connectionMonitor")
-                    #endif
-                }
-                Section(app.t("sessions")) {
-                    if app.sessions.isEmpty {
-                        Text(app.t("noSessions")).font(.callout).foregroundStyle(.tertiary)
-                            .padding(.vertical, 4)
-                    }
-                    ForEach(app.sessions) { config in
-                        NavigationLink(value: SidebarSelection.session(config.id)) {
-                            Label {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    HStack(spacing: 8) {
-                                        Text(config.name).fontWeight(.medium).lineLimit(1)
-                                        Spacer(minLength: 0)
-                                        if let runtime = app.sessionManager.runtimes[config.id] {
-                                            Text(app.t(config.mode.stateKey(runtime.state)))
-                                                .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                        ForEach(app.sessions) { config in
+                            NavigationLink(value: SidebarSelection.session(config.id)) {
+                                Label {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        HStack(spacing: 8) {
+                                            Text(config.name).fontWeight(.medium).lineLimit(1)
+                                            Spacer(minLength: 0)
+                                            let state = app.sessionManager.runtimes[config.id]?.state ?? .idle
+                                            Circle().fill(state == .failed ? Color.red : state.isActive ? .green : .secondary.opacity(0.5))
+                                                .frame(width: 8, height: 8)
+                                                .accessibilityLabel(app.t(config.mode.stateKey(state)))
+                                        }
+                                        Text(config.endpointDescription)
+                                            .font(.caption).foregroundStyle(.secondary)
+                                            .lineLimit(1).truncationMode(.middle)
+                                    }.padding(.vertical, 8)
+                                } icon: {
+                                    Image(systemName: sidebarSymbol(for: config.mode))
+                                }
+                            }
+                            .accessibilityIdentifier("sessionRow.\(config.id)")
+                            .contextMenu {
+                                Button(app.t("edit")) { editing = config }
+                                    .disabled(app.sessionManager.runtimes[config.id]?.isConfigurationLocked == true)
+                                if let runtime = app.sessionManager.runtimes[config.id] {
+                                    Button(app.t(runtime.state.isActive ? (config.mode.isUDP ? "stopSession" : config.mode.isServer ? "stopListening" : "disconnect") :
+                                                 (config.mode.isUDP ? "startSession" : config.mode.isServer ? "startListening" : "connect"))) {
+                                        Task {
+                                            if runtime.state.isActive { await runtime.stop() }
+                                            else if !(await app.startSession(runtime)) { selection = .session(config.id) }
                                         }
                                     }
-                                    Text("\(config.mode.title) · \(config.endpointDescription)")
-                                        .font(.caption).foregroundStyle(.secondary)
-                                        .lineLimit(1).truncationMode(.middle)
-                                }.padding(.vertical, 5)
-                            } icon: {
-                                Image(systemName: sidebarSymbol(for: config.mode))
-                            }
-                        }
-                        .accessibilityIdentifier("sessionRow.\(config.id)")
-                        .contextMenu {
-                            Button(app.t("edit")) { editing = config }
-                                .disabled(app.sessionManager.runtimes[config.id]?.isConfigurationLocked == true)
-                            if let runtime = app.sessionManager.runtimes[config.id] {
-                                Button(app.t(runtime.state.isActive ? (config.mode.isUDP ? "stopSession" : config.mode.isServer ? "stopListening" : "disconnect") :
-                                             (config.mode.isUDP ? "startSession" : config.mode.isServer ? "startListening" : "connect"))) {
-                                    Task {
-                                        if runtime.state.isActive { await runtime.stop() }
-                                        else if !(await app.startSession(runtime)) { selection = .session(config.id) }
-                                    }
+                                    .accessibilityIdentifier("toggleSession.\(config.id)")
                                 }
-                                .accessibilityIdentifier("toggleSession.\(config.id)")
-                            }
-                            Button(app.t("duplicate")) { app.duplicate(config) }
-                            Button(app.t("delete"), role: .destructive) {
-                                app.delete(config.id); if selection == .session(config.id) { selection = nil }
+                                Button(app.t("duplicate")) { app.duplicate(config) }
+                                Button(app.t("delete"), role: .destructive) {
+                                    app.delete(config.id); if selection == .session(config.id) { selection = nil }
+                                }
                             }
                         }
+                        .onDelete { indices in
+                            for id in indices.map({ app.sessions[$0].id }) { app.delete(id) }
+                        }
                     }
-                    .onDelete { indices in
-                        for id in indices.map({ app.sessions[$0].id }) { app.delete(id) }
+                    Section(app.t("tools")) {
+                        ForEach(SessionMode.allCases, id: \.self) { mode in
+                            Button { createSession(mode) } label: {
+                                Label {
+                                    Text(mode.title).foregroundStyle(.primary)
+                                } icon: {
+                                    Image(systemName: sidebarSymbol(for: mode)).foregroundStyle(.tint)
+                                }
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.vertical, 5)
+                                .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("newSession.\(mode.rawValue)")
+                        }
+                        NavigationLink(value: SidebarSelection.dns) {
+                            Label(app.t("dnsQuery"), systemImage: "globe")
+                                .padding(.vertical, 5)
+                        }.accessibilityIdentifier("dnsTool")
+                        #if os(macOS)
+                        NavigationLink(value: SidebarSelection.monitor) {
+                            Label(app.t("connectionMonitor"), systemImage: "network")
+                                .padding(.vertical, 5)
+                        }
+                        .accessibilityIdentifier("connectionMonitor")
+                        #endif
                     }
                 }
+                .listStyle(.sidebar)
+                .safeAreaInset(edge: .bottom, spacing: 0) {
+                    VStack(spacing: 0) {
+                        Divider().padding(.horizontal, 16)
+                        HStack {
+                            Button { showSettings = true } label: {
+                                Label(app.t("settings"), systemImage: "gearshape")
+                            }.accessibilityIdentifier("settings")
+                            Spacer()
+                            Button { showTransfer = true } label: {
+                                Label(app.t("configurationTransfer"), systemImage: "square.and.arrow.up.on.square")
+                            }
+                            .labelStyle(.iconOnly).accessibilityIdentifier("sessionTransfer")
+                            .help(app.t("configurationTransfer"))
+                        }.buttonStyle(.borderless).padding(20)
+                    }.background(.bar)
+                }
             }
-            .listStyle(.sidebar)
-            .navigationTitle("NetDock")
+            .navigationTitle("")
             .navigationSplitViewColumnWidth(min: 230, ideal: 260, max: 340)
-            .toolbar {
-                ToolbarItem {
-                    Button { showTransfer = true } label: { Label(app.t("configurationTransfer"), systemImage: "square.and.arrow.up.on.square") }
-                        .accessibilityIdentifier("sessionTransfer")
-                }
-                ToolbarItem {
-                    Button { showSettings = true } label: {
-                        Label(app.t("settings"), systemImage: "gearshape")
-                    }.accessibilityIdentifier("settings")
-                }
-            }
         } detail: {
             #if os(macOS)
             if selection == .monitor { ConnectionMonitorView() } else { sessionDetail }
@@ -163,7 +187,8 @@ struct RootView: View {
     }
 
     @ViewBuilder private var sessionDetail: some View {
-            if case let .session(id)? = selection,
+            if selection == .dns { DNSLookupView() }
+            else if case let .session(id)? = selection,
                let config = app.sessions.first(where: { $0.id == id }) {
                 if let runtime = app.sessionManager.runtimes[config.id] {
                     WorkspaceView(runtime: runtime, onEdit: { editing = config }).id(config.id)

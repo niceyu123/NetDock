@@ -1,5 +1,6 @@
 import Foundation
 import Network
+import Security
 
 /// All mutable state, NW objects and callbacks are confined to `queue`.
 /// Each start owns a generation token; callbacks from a stopped generation are ignored.
@@ -40,6 +41,14 @@ public final class TCPService: TransportService, @unchecked Sendable {
     private var cleanupWaiters: [@Sendable () -> Void] = []
     private var peers: [UUID: Peer] = [:]
     private var timeout: DispatchWorkItem?
+    private var reconnect: DispatchWorkItem?
+    private var runningConfig: SessionConfig?
+    private var retryAttempt = 0
+
+    static func reconnectDelay(attempt: Int) -> TimeInterval {
+        min(30, pow(2, Double(min(max(attempt, 0), 5))))
+    }
+
     private var pending: [UUID: PendingSend] = [:]
     private var pendingBytes = 0
     private let maxPendingBytes = 16 * 1_024 * 1_024
@@ -57,19 +66,11 @@ public final class TCPService: TransportService, @unchecked Sendable {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
             queue.async { [self] in
                 guard !state.isActive else { continuation.resume(); return }
+                runningConfig = valid; retryAttempt = 0
                 generation = UUID(); let token = generation
                 transition(.connecting); sink(.system("event.started"))
                 if mode == .tcpClient {
-                    guard let port = NWEndpoint.Port(rawValue: valid.remotePort) else {
-                        transition(.failed); continuation.resume(throwing: NetDockError(.invalidPort)); return
-                    }
-                    let connection = NWConnection(host: NWEndpoint.Host(valid.host), port: port, using: .tcp)
-                    add(connection, token: token)
-                    let item = DispatchWorkItem { [weak self] in
-                        guard let self, self.generation == token, self.state == .connecting else { return }
-                        self.fail(NetDockError(.timeout))
-                    }
-                    timeout = item; queue.asyncAfter(deadline: .now() + connectionTimeout, execute: item)
+                    beginClient(valid)
                     continuation.resume()
                 } else {
                     do {
@@ -107,6 +108,8 @@ public final class TCPService: TransportService, @unchecked Sendable {
     public func stop() async {
         await withCheckedContinuation { continuation in
             queue.async { [self] in
+                runningConfig = nil
+                reconnect?.cancel(); reconnect = nil
                 guard state.isActive else {
                     if cancellingListener != nil { cleanupWaiters.append { continuation.resume() } }
                     else { continuation.resume() }
@@ -182,7 +185,8 @@ public final class TCPService: TransportService, @unchecked Sendable {
                                      localEndpoint: connection.currentPath?.localEndpoint.map(Self.endpoint), connectedAt: .now)
                 if self.mode == .tcpClient {
                     self.timeout?.cancel(); self.timeout = nil
-                    self.transition(.ready); self.sink(.system("event.connected"))
+                    self.retryAttempt = 0
+                    self.transition(.ready); self.sink(.system(self.runningConfig?.tlsEnabled == true ? "event.tlsConnected" : "event.connected"))
                 } else if let info = peer.info { self.sink(.peerJoined(info)) }
                 self.receive(id, token: token)
             case .waiting(let error), .failed(let error):
@@ -214,7 +218,8 @@ public final class TCPService: TransportService, @unchecked Sendable {
                 else { self.sink(.error(Self.describe(error))); self.remove(id, reason: "event.peerLeft") }
             } else if complete {
                 if self.mode == .tcpClient {
-                    self.cleanup(); self.transition(.stopped); self.sink(.system("event.remoteClosed"))
+                    self.cleanup(); self.sink(.system("event.remoteClosed"))
+                    if !self.scheduleReconnect() { self.transition(.stopped) }
                 } else { self.remove(id, reason: "event.remoteClosed") }
             } else { self.receive(id, token: token) }
         }
@@ -238,7 +243,50 @@ public final class TCPService: TransportService, @unchecked Sendable {
         }
     }
     private func transition(_ next: ConnectionState) { state = next; sink(.stateChanged(next)) }
-    private func fail(_ error: NetDockError) { cleanup(); transition(.failed); sink(.error(error)) }
+    private func beginClient(_ config: SessionConfig) {
+        generation = UUID(); let token = generation
+        transition(.connecting)
+        let parameters: NWParameters
+        if config.tlsEnabled {
+            let tls = NWProtocolTLS.Options()
+            sec_protocol_options_set_min_tls_protocol_version(tls.securityProtocolOptions, .TLSv12)
+            if !config.tlsServerName.isEmpty {
+                config.tlsServerName.withCString { sec_protocol_options_set_tls_server_name(tls.securityProtocolOptions, $0) }
+            }
+            // Preserve Network.framework's system trust and hostname verification.
+            parameters = NWParameters(tls: tls, tcp: NWProtocolTCP.Options())
+        } else { parameters = .tcp }
+        let connection = NWConnection(host: NWEndpoint.Host(config.host),
+                                      port: NWEndpoint.Port(rawValue: config.remotePort)!, using: parameters)
+        add(connection, token: token)
+        let item = DispatchWorkItem { [weak self] in
+            guard let self, self.generation == token, self.state == .connecting else { return }
+            self.fail(NetDockError(.timeout))
+        }
+        timeout = item; queue.asyncAfter(deadline: .now() + connectionTimeout, execute: item)
+    }
+
+    private func scheduleReconnect() -> Bool {
+        guard mode == .tcpClient, let config = runningConfig, config.autoReconnect else { return false }
+        let token = generation
+        let delay = Self.reconnectDelay(attempt: retryAttempt)
+        retryAttempt = min(retryAttempt + 1, 5)
+        transition(.reconnecting); sink(.system("event.reconnecting"))
+        let item = DispatchWorkItem { [weak self] in
+            guard let self, self.generation == token, self.runningConfig != nil,
+                  self.state == .reconnecting else { return }
+            self.reconnect = nil
+            self.beginClient(config)
+        }
+        reconnect = item
+        queue.asyncAfter(deadline: .now() + delay, execute: item)
+        return true
+    }
+
+    private func fail(_ error: NetDockError) {
+        cleanup(); sink(.error(error))
+        if error.code == .permissionDenied || error.code == .tls || !scheduleReconnect() { transition(.failed) }
+    }
     private func waitForCleanup() async {
         await withCheckedContinuation { continuation in
             queue.async { [self] in
@@ -249,6 +297,7 @@ public final class TCPService: TransportService, @unchecked Sendable {
     }
     private func cleanup(completion: (@Sendable () -> Void)? = nil) {
         generation = UUID(); timeout?.cancel(); timeout = nil
+        reconnect?.cancel(); reconnect = nil
         for id in Array(peers.keys) { remove(id, reason: "event.peerLeft") }
         if let listener {
             self.listener = nil; cancellingListener = listener
@@ -281,13 +330,14 @@ public final class TCPService: TransportService, @unchecked Sendable {
         case .posix(.EACCES), .posix(.EPERM): code = .permissionDenied
         case .posix(.ETIMEDOUT): code = .timeout
         case .dns: code = .dns
+        case .tls: code = .tls
         default: code = .network
         }
         return NetDockError(code, detail: String(describing: error))
     }
 
     deinit {
-        timeout?.cancel(); listener?.stateUpdateHandler = nil; listener?.cancel()
+        reconnect?.cancel(); timeout?.cancel(); listener?.stateUpdateHandler = nil; listener?.cancel()
         cancellingListener?.stateUpdateHandler = nil; cancellingListener?.cancel()
         for peer in peers.values { peer.connection.cancel() }
         for send in pending.values {

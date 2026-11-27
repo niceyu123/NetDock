@@ -72,7 +72,7 @@ final class SessionRuntime {
         localEndpoint = snapshot.localEndpoint; sentPackets = snapshot.sentPackets; receivedPackets = snapshot.receivedPackets
         connectedDuration = snapshot.connectedDuration
         sentBytes = snapshot.sentBytes; receivedBytes = snapshot.receivedBytes; lastError = snapshot.lastError
-        if [.stopped, .failed, .stopping].contains(state) { periodic.stop() }
+        if [.stopped, .failed, .stopping, .reconnecting, .connecting].contains(state) { periodic.stop() }
         // Preserve a disconnected selection: never silently redirect a targeted send to broadcast.
     }
     func start() async {

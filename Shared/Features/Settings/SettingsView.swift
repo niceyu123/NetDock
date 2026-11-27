@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Environment(AppModel.self) private var app
+    private let privacyPolicyURL = URL(string: "https://github.com/niceyu123/NetDock/blob/main/docs/privacy.md")!
     var body: some View {
         @Bindable var app = app
         Form {
@@ -19,10 +20,14 @@ struct SettingsView: View {
             Section(app.t("privacy")) {
                 Text(app.t("privacyDescription")).font(.callout)
                 Text(app.t("logLimitDescription")).font(.caption).foregroundStyle(.secondary)
+                Link(app.t("privacyPolicy"), destination: privacyPolicyURL)
+                    .accessibilityIdentifier("privacyPolicyLink")
                 if app.recoveredStorage { Text(app.t("recoveredBackup")).foregroundStyle(.orange) }
             }
             Section(app.t("about")) {
-                LabeledContent(app.t("version"), value: "0.1 · M2 + M3")
+                if let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
+                    LabeledContent(app.t("version"), value: version)
+                }
                 Text(app.t("aboutDescription")).font(.callout).foregroundStyle(.secondary)
             }
         }

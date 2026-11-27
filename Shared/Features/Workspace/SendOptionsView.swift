@@ -1,56 +1,100 @@
 import SwiftUI
 import NetDockCore
 
-struct SendOptionsView: View {
+/// Shared inline controls; the session runtime owns the sending task and its lifecycle.
+struct PeriodicSendControls: View {
     @Environment(AppModel.self) private var app
-    @Environment(\.dismiss) private var dismiss
     @Bindable var runtime: SessionRuntime
+    @FocusState private var editing: Bool
+
+    private var isActive: Bool {
+        runtime.periodic.state == .running || runtime.periodic.state == .paused
+    }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    TextField(app.t("intervalMS"), text: $runtime.intervalText).monospaced().accessibilityIdentifier("loopInterval")
-                    Toggle(app.t("continuous"), isOn: $runtime.continuous).accessibilityIdentifier("continuousSend")
-                    if !runtime.continuous {
-                        TextField(app.t("repeatCount"), text: $runtime.repeatCountText).monospaced().accessibilityIdentifier("loopCount")
-                    }
-                    Button(app.t("startRepeat")) {
-                        runtime.startPeriodic()
-                        if runtime.periodic.state == .running, let ms = Double(runtime.intervalText) {
-                            var config = runtime.config
-                            config.repeatInterval = ms / 1000
-                            config.repeatCount = runtime.continuous ? 0 : Int(runtime.repeatCountText) ?? 0
-                            app.save(config)
-                        }
-                    }
-                        .disabled(!runtime.canSend || runtime.payload.isEmpty).accessibilityIdentifier("startRepeat")
-                } footer: { Text(app.t("loopSnapshotHint")) }
-                Section {
-                    Text(app.t("loop.\(String(describing: runtime.periodic.state))"))
-                        .accessibilityIdentifier("loopState")
-                    LabeledContent(app.t("sentCount"), value: String(runtime.periodic.sentCount))
-                        .accessibilityIdentifier("loopSentCount")
-                    loopButtons
-                }
-                if let error = runtime.inputError ?? runtime.periodic.lastError { Text(app.errorText(error)).foregroundStyle(.red) }
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                Label(app.t("periodicSend"), systemImage: "repeat").foregroundStyle(.secondary)
+                    .help(app.t("loopSnapshotHint"))
+                intervalField
+                Toggle(app.t("continuous"), isOn: $runtime.continuous)
+                    .accessibilityIdentifier("continuousSend").disabled(isActive)
+                if !runtime.continuous { countField }
+                Spacer(minLength: 0)
+                progress
+                actions
             }
-            .formStyle(.grouped).navigationTitle(app.t("periodicSend"))
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(app.t("done")) { dismiss() }.accessibilityIdentifier("closeLoop") } }
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Label(app.t("periodicSend"), systemImage: "repeat")
+                    Spacer()
+                    Toggle(app.t("continuous"), isOn: $runtime.continuous)
+                        .accessibilityIdentifier("continuousSend").disabled(isActive)
+                }
+                HStack { intervalField; if !runtime.continuous { countField } }
+                HStack { progress; Spacer(minLength: 8); actions }
+            }
         }
-        #if os(macOS)
-        .frame(width: 500, height: 440)
-        #endif
+        .font(.callout)
+        .textFieldStyle(.roundedBorder)
+        .monospacedDigit()
+        .focused($editing)
+        .onSubmit { editing = false }
     }
-    @ViewBuilder private var loopButtons: some View {
-        if runtime.periodic.state == .running {
-            Button(app.t("pause")) { runtime.periodic.pause() }.accessibilityIdentifier("pauseRepeat")
-        } else if runtime.periodic.state == .paused {
-            Button(app.t("resume")) { runtime.periodic.resume() }.accessibilityIdentifier("resumeRepeat")
+
+    private var intervalField: some View {
+        HStack(spacing: 6) {
+            Text(app.t("intervalMS")).foregroundStyle(.secondary)
+            TextField(app.t("intervalMS"), text: $runtime.intervalText)
+                .accessibilityLabel(app.t("intervalMS")).accessibilityIdentifier("loopInterval")
+                .frame(width: 70).disabled(isActive)
         }
-        Button(app.t("stop"), role: .destructive) { runtime.periodic.stop() }
-            .disabled(runtime.periodic.state != .running && runtime.periodic.state != .paused)
-            .accessibilityIdentifier("stopRepeat")
+    }
+
+    private var countField: some View {
+        HStack(spacing: 6) {
+            Text(app.t("repeatCount")).foregroundStyle(.secondary)
+            TextField(app.t("repeatCount"), text: $runtime.repeatCountText)
+                .accessibilityLabel(app.t("repeatCount")).accessibilityIdentifier("loopCount")
+                .frame(width: 60).disabled(isActive)
+        }
+    }
+
+    private var progress: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(app.t("loop.\(String(describing: runtime.periodic.state))"))
+                .accessibilityIdentifier("loopState")
+            Text("\(app.t("sentCount")): \(runtime.periodic.sentCount)")
+                .monospacedDigit().foregroundStyle(.secondary)
+                .accessibilityIdentifier("loopSentCount")
+        }.font(.caption)
+    }
+
+    @ViewBuilder private var actions: some View {
+        if runtime.periodic.state == .running {
+            Button(app.t("pause")) { runtime.periodic.pause() }
+                .accessibilityIdentifier("pauseRepeat")
+        } else if runtime.periodic.state == .paused {
+            Button(app.t("resume")) { runtime.periodic.resume() }
+                .accessibilityIdentifier("resumeRepeat")
+        } else {
+            Button(app.t("startRepeat")) {
+                editing = false
+                runtime.startPeriodic()
+                if runtime.periodic.state == .running {
+                    var config = runtime.config
+                    config.repeatInterval = (Double(runtime.intervalText) ?? 1000) / 1000
+                    config.repeatCount = runtime.continuous ? 0 : Int(runtime.repeatCountText) ?? 0
+                    app.save(config)
+                }
+            }
+            .disabled(!runtime.canSend || runtime.payload.isEmpty)
+            .accessibilityIdentifier("startRepeat")
+        }
+        if isActive {
+            Button(app.t("stop"), role: .destructive) { runtime.periodic.stop() }
+                .accessibilityIdentifier("stopRepeat")
+        }
     }
 }
 

@@ -1,15 +1,15 @@
 import Foundation
 
 public enum ConnectionState: String, Codable, Sendable {
-    case idle, starting, connecting, listening, ready, stopping, stopped, failed
-    public var isActive: Bool { [.starting, .connecting, .listening, .ready, .stopping].contains(self) }
+    case idle, starting, connecting, reconnecting, listening, ready, stopping, stopped, failed
+    public var isActive: Bool { [.starting, .connecting, .reconnecting, .listening, .ready, .stopping].contains(self) }
 }
 
 public struct NetDockError: Error, Equatable, Sendable {
     public enum Code: String, Codable, Sendable {
         case invalidName, invalidHost, invalidPort, unsupportedMode, activeSession, emptyPayload, invalidHex, oddHex
         case notReady, noPeers, peerMissing, timeout, refused, addressInUse, permissionDenied
-        case dns, network, storage, corruptStorage, schemaVersion, sendQueueFull
+        case dns, tls, invalidDNSQuery, dnsMalformed, dnsMismatch, network, storage, corruptStorage, schemaVersion, sendQueueFull
         case datagramTooLarge, unicastOnly, invalidInterval, invalidRepeatCount, fileTooLarge
     }
     public let code: Code

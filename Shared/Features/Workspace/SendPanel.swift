@@ -5,11 +5,17 @@ struct SendPanel: View {
     @Environment(AppModel.self) private var app
     @Bindable var runtime: SessionRuntime
     var showClients: () -> Void
-    @State private var showLoop = false
     @State private var showCommands = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 16) { panelHeading; Spacer(minLength: 8); editorActions }
+                VStack(alignment: .leading, spacing: 8) {
+                    panelHeading
+                    HStack { editorActions; Spacer(minLength: 0) }
+                }
+            }
             if runtime.config.mode.isServer {
                 Button(action: showClients) {
                     Label("\(app.t(runtime.config.mode.isUDP ? "sources" : "clients")) (\(runtime.peers.count))", systemImage: "person.2")
@@ -32,14 +38,13 @@ struct SendPanel: View {
                     }
                 }
             }
-            Picker(app.t("sendEncoding"), selection: encodingBinding) {
-                Text(app.t("utf8")).tag(DataEncoding.utf8)
-                Text("HEX").tag(DataEncoding.hex)
-            }.pickerStyle(.segmented).accessibilityIdentifier("sendEncoding")
             TextEditor(text: $runtime.payload)
                 .font(.body.monospaced()).autocorrectionDisabled()
-                .frame(minHeight: 64, idealHeight: 90, maxHeight: 140)
-                .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
+                .frame(height: 72)
+                .scrollContentBackground(.hidden)
+                .padding(6)
+                .background(.quaternary.opacity(0.25), in: RoundedRectangle(cornerRadius: 8))
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(.separator))
                 .accessibilityLabel(app.t("payload")).accessibilityIdentifier("payload")
             #if os(iOS)
                 .textInputAutocapitalization(.never)
@@ -57,27 +62,32 @@ struct SendPanel: View {
                 .disabled(!runtime.canSend || runtime.payload.isEmpty)
                 .keyboardShortcut(.return, modifiers: .command).accessibilityIdentifier("sendPayload")
             }
-            HStack {
-                Button { showLoop = true } label: { Label(app.t("periodicSend"), systemImage: "repeat") }
-                    .accessibilityIdentifier("periodicSend")
-                Spacer()
-                Button { showCommands = true } label: { Label(app.t("commands"), systemImage: "text.badge.star") }
-                    .accessibilityIdentifier("commands")
-            }.font(.caption)
-            if runtime.periodic.state == .running || runtime.periodic.state == .paused {
-                HStack {
-                    Text("\(app.t("sentCount")): \(runtime.periodic.sentCount)").font(.caption.monospaced())
-                    Spacer()
-                    Button(app.t("stop"), role: .destructive) { runtime.periodic.stop() }.accessibilityIdentifier("stopRepeatInline")
-                }
-            }
-            #if os(macOS)
-            Text(app.t("sendHint")).font(.caption).foregroundStyle(.secondary)
-            #endif
+            PeriodicSendControls(runtime: runtime)
         }
-        .sheet(isPresented: $showLoop) { SendOptionsView(runtime: runtime) }
         .sheet(isPresented: $showCommands) { CommandsView(runtime: runtime) }
     }
+    private var panelHeading: some View {
+        HStack(spacing: 20) {
+            Text(app.t("sendData")).font(.headline).foregroundStyle(.tint)
+            Button { showCommands = true } label: { Text(app.t("commands")) }
+                .buttonStyle(.borderless).foregroundStyle(.secondary)
+                .accessibilityIdentifier("commands")
+        }
+    }
+
+    private var editorActions: some View {
+        HStack(spacing: 8) {
+            Picker(app.t("sendEncoding"), selection: encodingBinding) {
+                Text("UTF-8").tag(DataEncoding.utf8)
+                Text("HEX").tag(DataEncoding.hex)
+            }
+            .pickerStyle(.segmented).labelsHidden().frame(width: 150)
+            .accessibilityLabel(app.t("sendEncoding")).accessibilityIdentifier("sendEncoding")
+            Button(app.t("clearPayload")) { runtime.payload = "" }
+                .disabled(runtime.payload.isEmpty).accessibilityIdentifier("clearPayload")
+        }
+    }
+
     private var payloadSize: Int { (try? PayloadCodec.encode(runtime.payload, as: runtime.config.sendEncoding).count) ?? 0 }
     private var encodingBinding: Binding<DataEncoding> {
         Binding(get: { runtime.config.sendEncoding }, set: {

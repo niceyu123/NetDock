@@ -8,7 +8,7 @@ struct SessionEditor: View {
     @State private var port = ""
     @State private var clientLocalPort = ""
     @State private var error: NetDockError?
-    private enum Field: Hashable { case name, host, port, localHost, localPort }
+    private enum Field: Hashable { case name, host, port, localHost, localPort, tlsName }
     @FocusState private var focusedField: Field?
     var onSave: (SessionConfig) -> Bool
 
@@ -52,6 +52,24 @@ struct SessionEditor: View {
                     Text(app.t(config.mode.isUDP ? "udpConfigurationHint" : config.mode.isServer ? "listenHint" : "hostHint"))
                         .font(.caption).foregroundStyle(.secondary)
                 }
+                if config.mode == .tcpClient {
+                    Section {
+                        Toggle(app.t("tlsEnabled"), isOn: $config.tlsEnabled)
+                            .accessibilityIdentifier("tlsEnabled")
+                        if config.tlsEnabled {
+                            TextField(app.t("tlsServerName"), text: $config.tlsServerName)
+                                .focused($focusedField, equals: .tlsName).autocorrectionDisabled()
+                                .accessibilityIdentifier("tlsServerName")
+                                #if os(iOS)
+                                .textInputAutocapitalization(.never)
+                                #endif
+                            Text(app.t("tlsHint")).font(.caption).foregroundStyle(.secondary)
+                        }
+                        Toggle(app.t("autoReconnect"), isOn: $config.autoReconnect)
+                            .accessibilityIdentifier("autoReconnect")
+                        Text(app.t("autoReconnectHint")).font(.caption).foregroundStyle(.secondary)
+                    }
+                }
                 if let error { Text(app.errorText(error)).foregroundStyle(.red) }
             }
             .formStyle(.grouped)
@@ -92,6 +110,7 @@ struct SessionEditor: View {
             clientLocalPort = config.localPort == 0 ? "" : String(config.localPort)
         }
         .onChange(of: config.mode) { _, mode in
+            if mode != .tcpClient { config.tlsEnabled = false }
             if mode == .udpClient { config.localPort = 0; clientLocalPort = "" }
             port = String(mode.isServer ? (config.localPort == 0 ? 9000 : config.localPort) : config.remotePort)
         }

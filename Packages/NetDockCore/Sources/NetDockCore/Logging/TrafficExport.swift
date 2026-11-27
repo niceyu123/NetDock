@@ -77,15 +77,24 @@ public enum TrafficExport {
 }
 
 public struct TrafficQuery: Sendable {
-    public var search: String
+    public var search: String {
+        didSet {
+            query = search.trimmingCharacters(in: .whitespacesAndNewlines)
+            hexPattern = HexPattern(query)
+        }
+    }
     public var direction: TrafficRecord.Direction?
+    private var query: String
+    private var hexPattern: HexPattern?
+
     public init(search: String = "", direction: TrafficRecord.Direction? = nil) {
         self.search = search; self.direction = direction
+        query = search.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexPattern = HexPattern(query)
     }
 
     public func matches(_ record: TrafficRecord) -> Bool {
         guard direction == nil || record.direction == direction else { return false }
-        let query = search.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return true }
         var fields = [record.direction.rawValue, record.protocolKind.rawValue]
         fields += [record.localEndpoint, record.remoteEndpoint, record.messageKey].compactMap { $0 }
@@ -94,7 +103,51 @@ public struct TrafficQuery: Sendable {
         func contains(_ text: String) -> Bool { text.range(of: query, options: [.caseInsensitive, .diacriticInsensitive]) != nil }
         if fields.contains(where: contains) { return true }
         if let text = PayloadCodec.text(record.payload), contains(text) { return true }
-        let hex = PayloadCodec.hex(record.payload)
-        return contains(hex) || contains(hex.replacingOccurrences(of: " ", with: ""))
+        return hexPattern?.matches(record.payload) ?? false
+    }
+
+    /// Search the byte stream's nibbles directly, including partial-byte queries.
+    /// KMP keeps overlapping patterns linear without formatting or copying the payload.
+    private struct HexPattern: Sendable {
+        let nibbles: [UInt8]
+        let fallback: [Int]
+
+        init?(_ query: String) {
+            var nibbles: [UInt8] = []
+            for scalar in query.unicodeScalars {
+                if CharacterSet.whitespacesAndNewlines.contains(scalar) { continue }
+                switch scalar.value {
+                case 48...57: nibbles.append(UInt8(scalar.value - 48))
+                case 65...70: nibbles.append(UInt8(scalar.value - 55))
+                case 97...102: nibbles.append(UInt8(scalar.value - 87))
+                default: return nil
+                }
+            }
+            guard !nibbles.isEmpty else { return nil }
+            var fallback = [Int](repeating: 0, count: nibbles.count)
+            var matched = 0
+            for index in nibbles.indices.dropFirst() {
+                while matched > 0 && nibbles[index] != nibbles[matched] { matched = fallback[matched - 1] }
+                if nibbles[index] == nibbles[matched] { matched += 1 }
+                fallback[index] = matched
+            }
+            self.nibbles = nibbles; self.fallback = fallback
+        }
+
+        func matches(_ data: Data) -> Bool {
+            guard nibbles.count <= data.count * 2 else { return false }
+            return data.withUnsafeBytes { (bytes: UnsafeRawBufferPointer) in
+                var matched = 0
+                func consume(_ nibble: UInt8) -> Bool {
+                    while matched > 0 && nibble != nibbles[matched] { matched = fallback[matched - 1] }
+                    if nibble == nibbles[matched] { matched += 1 }
+                    return matched == nibbles.count
+                }
+                for byte in bytes {
+                    if consume(byte >> 4) || consume(byte & 0x0F) { return true }
+                }
+                return false
+            }
+        }
     }
 }

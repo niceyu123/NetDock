@@ -26,7 +26,7 @@ guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
     exit(EXIT_FAILURE)
 }
 
-// Use top-left coordinates so the paths read like the supplied reference.
+// Use top-left coordinates for the waveform artwork.
 context.translateBy(x: 0, y: CGFloat(size))
 context.scaleBy(x: 1, y: -1)
 
@@ -34,51 +34,38 @@ func color(_ red: CGFloat, _ green: CGFloat, _ blue: CGFloat) -> CGColor {
     CGColor(colorSpace: colorSpace, components: [red, green, blue, 1])!
 }
 
-let background = color(1, 1, 1)
+// Fixed system-blue branding keeps exported icons independent of the Mac's
+// current accent color. The sidebar uses this same generated artwork.
+let background = color(0, 122.0 / 255.0, 1)
 context.setFillColor(background)
 context.fill(CGRect(x: 0, y: 0, width: size, height: size))
 
-let lineColor = color(0, 0, 0)
-context.setStrokeColor(lineColor)
-context.setLineWidth(46)
+context.setStrokeColor(color(1, 1, 1))
+context.setLineWidth(60)
 context.setLineCap(.round)
 context.setLineJoin(.round)
 
-// The three-node branching mark follows the proportions of the supplied art.
-let branches = CGMutablePath()
-branches.move(to: CGPoint(x: 512, y: 366))
-branches.addLine(to: CGPoint(x: 512, y: 492))
-branches.move(to: CGPoint(x: 512, y: 492))
-branches.addLine(to: CGPoint(x: 376, y: 492))
-branches.addQuadCurve(
-    to: CGPoint(x: 312, y: 556),
-    control: CGPoint(x: 312, y: 492)
-)
-branches.addLine(to: CGPoint(x: 312, y: 586))
-branches.move(to: CGPoint(x: 512, y: 492))
-branches.addLine(to: CGPoint(x: 648, y: 492))
-branches.addQuadCurve(
-    to: CGPoint(x: 712, y: 556),
-    control: CGPoint(x: 712, y: 492)
-)
-branches.addLine(to: CGPoint(x: 712, y: 586))
-context.addPath(branches)
-context.strokePath()
-
-func drawRing(center: CGPoint, radius: CGFloat, stroke: CGColor, width: CGFloat) {
-    context.setStrokeColor(stroke)
-    context.setLineWidth(width)
-    context.strokeEllipse(in: CGRect(
-        x: center.x - radius,
-        y: center.y - radius,
-        width: radius * 2,
-        height: radius * 2
-    ))
+// Original vector waveform, matching the in-app mark's visual language.
+// Rounded turns and a generous margin keep the line legible at Dock sizes.
+let waveform = CGMutablePath()
+waveform.move(to: CGPoint(x: 126, y: 548))
+waveform.addLine(to: CGPoint(x: 226, y: 548))
+let turns: [CGPoint] = [
+    CGPoint(x: 326, y: 448), CGPoint(x: 414, y: 700),
+    CGPoint(x: 512, y: 310), CGPoint(x: 600, y: 720),
+    CGPoint(x: 698, y: 448), CGPoint(x: 798, y: 548)
+]
+var previous = CGPoint(x: 226, y: 548)
+for turn in turns {
+    let handle = (turn.x - previous.x) * 0.45
+    waveform.addCurve(to: turn,
+                      control1: CGPoint(x: previous.x + handle, y: previous.y),
+                      control2: CGPoint(x: turn.x - handle, y: turn.y))
+    previous = turn
 }
-
-drawRing(center: CGPoint(x: 512, y: 264), radius: 102, stroke: lineColor, width: 46)
-drawRing(center: CGPoint(x: 312, y: 712), radius: 104, stroke: lineColor, width: 46)
-drawRing(center: CGPoint(x: 712, y: 712), radius: 104, stroke: lineColor, width: 46)
+waveform.addLine(to: CGPoint(x: 898, y: 548))
+context.addPath(waveform)
+context.strokePath()
 
 guard let image = context.makeImage() else {
     fputs("Unable to create the app icon image.\n", stderr)
@@ -101,6 +88,22 @@ guard writePNG(image, to: outputURL) else {
     exit(EXIT_FAILURE)
 }
 
+// A regular image asset lets both platforms reuse the exact app-icon waveform
+// inside the app, rather than substituting a denser SF Symbol.
+let brandURL = outputURL.deletingLastPathComponent().deletingLastPathComponent()
+    .appendingPathComponent("BrandMark.imageset", isDirectory: true)
+try FileManager.default.createDirectory(at: brandURL, withIntermediateDirectories: true)
+guard writePNG(image, to: brandURL.appendingPathComponent("BrandMark.png")) else {
+    fputs("Unable to write the in-app brand image.\n", stderr)
+    exit(EXIT_FAILURE)
+}
+let brandContents: [String: Any] = [
+    "images": [["filename": "BrandMark.png", "idiom": "universal"]],
+    "info": ["author": "xcode", "version": 1]
+]
+try JSONSerialization.data(withJSONObject: brandContents, options: [.prettyPrinted, .sortedKeys])
+    .write(to: brandURL.appendingPathComponent("Contents.json"), options: .atomic)
+
 // Modern macOS owns the enclosure. Supply full-bleed artwork to Icon Composer
 // instead of placing a second rounded tile inside the system's icon mask.
 let composerURL = macIconSetURL.deletingLastPathComponent()
@@ -112,7 +115,7 @@ guard writePNG(image, to: composerAssetsURL.appendingPathComponent("Network.png"
     exit(EXIT_FAILURE)
 }
 let composerDocument: [String: Any] = [
-    "fill": ["solid": "srgb:1.00000,1.00000,1.00000,1.00000"],
+    "fill": ["solid": "srgb:0.00000,0.47843,1.00000,1.00000"],
     "groups": [[
         "name": "Network",
         "layers": [["name": "Network", "image-name": "Network.png", "glass": false]],

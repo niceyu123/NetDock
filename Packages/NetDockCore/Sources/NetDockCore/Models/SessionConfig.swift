@@ -29,6 +29,9 @@ public struct SessionConfig: Codable, Identifiable, Equatable, Sendable {
     public var localHost: String
     public var sendEncoding: DataEncoding
     public var displayEncoding: DataEncoding
+    public var tlsEnabled: Bool
+    public var tlsServerName: String
+    public var autoReconnect: Bool
     public var autoScroll: Bool
     public var repeatInterval: TimeInterval
     public var repeatCount: Int
@@ -38,18 +41,20 @@ public struct SessionConfig: Codable, Identifiable, Equatable, Sendable {
     public init(id: UUID = UUID(), name: String, mode: SessionMode = .tcpClient,
                 host: String = "127.0.0.1", remotePort: UInt16 = 9000, localPort: UInt16 = 9000, localHost: String = "",
                 sendEncoding: DataEncoding = .utf8, displayEncoding: DataEncoding = .utf8,
-                autoScroll: Bool = true, repeatInterval: TimeInterval = 1, repeatCount: Int = 0,
+                autoScroll: Bool = true, autoReconnect: Bool = false, tlsEnabled: Bool = false, tlsServerName: String = "", repeatInterval: TimeInterval = 1, repeatCount: Int = 0,
                 createdAt: Date = .now, updatedAt: Date = .now) {
         self.id = id; self.name = name; self.mode = mode; self.host = host
         self.remotePort = remotePort; self.localPort = localPort
         self.localHost = localHost
         self.sendEncoding = sendEncoding; self.displayEncoding = displayEncoding
+        self.tlsEnabled = tlsEnabled; self.tlsServerName = tlsServerName
+        self.autoReconnect = autoReconnect
         self.autoScroll = autoScroll; self.createdAt = createdAt; self.updatedAt = updatedAt
         self.repeatInterval = repeatInterval; self.repeatCount = repeatCount
     }
 
     public var endpointDescription: String {
-        mode.isServer ? "\(localHost.isEmpty ? "*" : localHost.contains(":") ? "[\(localHost)]" : localHost):\(localPort)" : "\(host.contains(":") ? "[\(host)]" : host):\(remotePort)"
+        mode.isServer ? "\(mode != .udpServer || localHost.isEmpty ? "*" : localHost.contains(":") ? "[\(localHost)]" : localHost):\(localPort)" : "\(host.contains(":") ? "[\(host)]" : host):\(remotePort)"
     }
 
     public func validated() throws -> SessionConfig {
@@ -59,8 +64,16 @@ public struct SessionConfig: Codable, Identifiable, Equatable, Sendable {
         guard repeatInterval.isFinite, repeatInterval >= 0.1 else { throw NetDockError(.invalidInterval) }
         guard repeatCount >= 0 else { throw NetDockError(.invalidRepeatCount) }
         var result = self
+        guard !tlsEnabled || mode == .tcpClient else { throw NetDockError(.unsupportedMode) }
+        result.tlsServerName = tlsServerName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if result.tlsEnabled, !result.tlsServerName.isEmpty {
+            let value = result.tlsServerName
+            guard value.utf8.count <= 253, value.utf8.allSatisfy({ (48...57).contains($0) || (65...90).contains($0) || (97...122).contains($0) || $0 == 45 || $0 == 46 }),
+                  value.split(separator: ".", omittingEmptySubsequences: false).allSatisfy({ !$0.isEmpty && $0.utf8.count <= 63 }) else { throw NetDockError(.invalidHost) }
+        }
         result.host = try EndpointInput.normalizedHost(host, required: !mode.isServer)
-        result.localHost = try EndpointInput.normalizedHost(localHost, required: false)
+        // TCP currently lets Network.framework choose the local interface.
+        result.localHost = mode.isUDP ? try EndpointInput.normalizedHost(localHost, required: false) : ""
         if mode.isUDP {
             if !mode.isServer { result.host = try EndpointInput.unicastHost(result.host) }
             if !result.localHost.isEmpty {
@@ -73,6 +86,8 @@ public struct SessionConfig: Codable, Identifiable, Equatable, Sendable {
     /// Recheck at save time: another window may have started this session after editing began.
     public func validateUpdate(from current: SessionConfig, isActive: Bool) throws {
         guard isActive else { return }
+        guard tlsEnabled == current.tlsEnabled, tlsServerName == current.tlsServerName else { throw NetDockError(.activeSession) }
+        guard autoReconnect == current.autoReconnect else { throw NetDockError(.activeSession) }
         guard mode == current.mode else { throw NetDockError(.activeSession) }
         if mode.isUDP {
             guard localHost == current.localHost, localPort == current.localPort else { throw NetDockError(.activeSession) }
@@ -86,7 +101,7 @@ public struct SessionConfig: Codable, Identifiable, Equatable, Sendable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, mode, host, remotePort, localPort, localHost, sendEncoding, displayEncoding, autoScroll, repeatInterval, repeatCount, createdAt, updatedAt
+        case id, name, mode, host, remotePort, localPort, localHost, sendEncoding, displayEncoding, autoScroll, autoReconnect, tlsEnabled, tlsServerName, repeatInterval, repeatCount, createdAt, updatedAt
     }
     public init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -96,6 +111,9 @@ public struct SessionConfig: Codable, Identifiable, Equatable, Sendable {
         localHost = try c.decodeIfPresent(String.self, forKey: .localHost) ?? ""
         sendEncoding = try c.decode(DataEncoding.self, forKey: .sendEncoding)
         displayEncoding = try c.decode(DataEncoding.self, forKey: .displayEncoding)
+        tlsEnabled = try c.decodeIfPresent(Bool.self, forKey: .tlsEnabled) ?? false
+        tlsServerName = try c.decodeIfPresent(String.self, forKey: .tlsServerName) ?? ""
+        autoReconnect = try c.decodeIfPresent(Bool.self, forKey: .autoReconnect) ?? false
         autoScroll = try c.decode(Bool.self, forKey: .autoScroll)
         repeatInterval = try c.decodeIfPresent(TimeInterval.self, forKey: .repeatInterval) ?? 1
         repeatCount = try c.decodeIfPresent(Int.self, forKey: .repeatCount) ?? 0

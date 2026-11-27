@@ -1,8 +1,30 @@
 {
   "sourceLanguage" : "zh-Hans",
   "strings" : {
+    "%@ (%lld)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ (%2$lld)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ (%2$lld)"
+          }
+        }
+      }
+    },
     "%@ · %@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · %2$@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
@@ -13,6 +35,12 @@
     },
     "%@ · PID %@ · FD %@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ · PID %2$@ · FD %3$@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
@@ -21,18 +49,14 @@
         }
       }
     },
-    "%@ (%lld)" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@ (%2$lld)"
-          }
-        }
-      }
-    },
     "%@: %@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
@@ -43,6 +67,12 @@
     },
     "%@: %lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$lld"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
@@ -51,18 +81,30 @@
         }
       }
     },
-    "%@: %lld · %@: %lld" : {
+    "%@: %lld %@" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$lld %3$@"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$@: %2$lld · %3$@: %4$lld"
+            "state" : "translated",
+            "value" : "%1$@: %2$lld %3$@"
           }
         }
       }
     },
     "%@: %lld / %lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$lld / %3$lld"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
@@ -71,8 +113,30 @@
         }
       }
     },
+    "%@: %lld · %@: %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: %2$lld · %3$@: %4$lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$lld · %3$@: %4$lld"
+          }
+        }
+      }
+    },
     "%@: +%lld" : {
       "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: +%2$lld"
+          }
+        },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "new",
@@ -81,8 +145,213 @@
         }
       }
     },
+    "%@: TX %llu · RX %llu" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: TX %2$llu · RX %3$llu"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: TX %2$llu · RX %3$llu"
+          }
+        }
+      }
+    },
     "%lld B" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld B"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld B"
+          }
+        }
+      }
+    },
+    "CSV" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CSV"
+          }
+        }
+      }
+    },
+    "English" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "English"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "English"
+          }
+        }
+      }
+    },
+    "HEX" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEX"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEX"
+          }
+        }
+      }
+    },
+    "JSON" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON"
+          }
+        }
+      }
+    },
+    "NetDock" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NetDock"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NetDock"
+          }
+        }
+      }
+    },
+    "PID" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PID"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PID"
+          }
+        }
+      }
+    },
+    "RX" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RX"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RX"
+          }
+        }
+      }
+    },
+    "SYS" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SYS"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SYS"
+          }
+        }
+      }
+    },
+    "TX" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TX"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TX"
+          }
+        }
+      }
+    },
+    "TX %llu · RX %llu B" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TX %1$llu · RX %2$llu B"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "TX %1$llu · RX %2$llu B"
+          }
+        }
+      }
+    },
+    "UTF-8" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTF-8"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "UTF-8"
+          }
+        }
+      }
     },
     "about" : {
       "extractionState" : "manual",
@@ -107,13 +376,13 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "NetDock. Free, open source, and native to Apple platforms. This milestone provides TCP Client and TCP Server. UDP follows in M2."
+            "value" : "NetDock is an open-source network tool for TCP and UDP client and server sessions, DNS lookup, and traffic logging."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "NetDock · 网络工作台。免费、开源、Apple 原生。此轮提供 TCP Client 与 TCP Server；UDP 将在 M2 实现。"
+            "value" : "NetDock 是一款开源网络工具，支持 TCP 和 UDP 客户端与服务端会话、DNS 查询和通信日志。"
           }
         }
       }
@@ -220,6 +489,40 @@
         }
       }
     },
+    "autoReconnect" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto reconnect"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动重连"
+          }
+        }
+      }
+    },
+    "autoReconnectHint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retry after 1, 2, 4, 8, 16, then 30 seconds when TCP fails or closes. Reset after connecting. Stop or background cancels retries; data and periodic sends are not replayed."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TCP 连接失败或断开后按 1、2、4、8、16、30 秒间隔重试，成功后重置。手动停止或进入后台会取消重试；不会重发数据或恢复周期发送。"
+          }
+        }
+      }
+    },
     "autoScroll" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -237,6 +540,40 @@
         }
       }
     },
+    "automaticAddress" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动选择"
+          }
+        }
+      }
+    },
+    "automaticPort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自动分配"
+          }
+        }
+      }
+    },
     "backgroundStopped" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -250,6 +587,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "应用进入后台，已停止移动端会话。返回后可手动启动。"
+          }
+        }
+      }
+    },
+    "bindPort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Local Port"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本地端口"
           }
         }
       }
@@ -322,6 +676,23 @@
         }
       }
     },
+    "clearPayload" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clear"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清空"
+          }
+        }
+      }
+    },
     "clients" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -356,23 +727,6 @@
         }
       }
     },
-    "commands" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Commands and History"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "快捷指令与历史"
-          }
-        }
-      }
-    },
     "commandTitle" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -386,6 +740,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "指令名称"
+          }
+        }
+      }
+    },
+    "commands" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Commands and History"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "快捷指令与历史"
           }
         }
       }
@@ -560,9 +931,6 @@
         }
       }
     },
-    "CSV" : {
-
-    },
     "delete" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -610,6 +978,346 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "显示编码"
+          }
+        }
+      }
+    },
+    "dns.section.additional" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Additional"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "附加记录"
+          }
+        }
+      }
+    },
+    "dns.section.answer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Answers"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回答记录"
+          }
+        }
+      }
+    },
+    "dns.section.authority" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Authority"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "权威记录"
+          }
+        }
+      }
+    },
+    "dnsCopyResult" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Result"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制查询结果"
+          }
+        }
+      }
+    },
+    "dnsElapsed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elapsed time"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查询耗时"
+          }
+        }
+      }
+    },
+    "dnsFlagsHint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AA indicates an authoritative answer; RA indicates recursion availability. Neither implies DNSSEC validation."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "AA 表示权威回答，RA 表示服务器支持递归；不代表 DNSSEC 验证。"
+          }
+        }
+      }
+    },
+    "dnsLookingUp" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Looking up DNS"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在查询 DNS"
+          }
+        }
+      }
+    },
+    "dnsLookup" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Look Up"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查询"
+          }
+        }
+      }
+    },
+    "dnsName" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Domain or PTR address"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "域名或 PTR 地址"
+          }
+        }
+      }
+    },
+    "dnsNoRecords" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No records in the response. Check the response status."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "响应中没有记录，请同时查看响应状态。"
+          }
+        }
+      }
+    },
+    "dnsPort" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolver port"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解析服务器端口"
+          }
+        }
+      }
+    },
+    "dnsQuery" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DNS Lookup"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DNS 查询"
+          }
+        }
+      }
+    },
+    "dnsQueryHint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Query the specified resolver, defaulting to 1.1.1.1:53, independently of system DNS. Use ASCII or Punycode names; PTR accepts IP addresses. Timeout: 5 seconds. Truncated UDP replies fall back to TCP."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向指定解析服务器发送 DNS 查询，默认 1.1.1.1:53，不代表系统 DNS。域名使用 ASCII 或 Punycode；PTR 可直接输入 IP 地址。超时 5 秒，UDP 截断时使用 TCP。"
+          }
+        }
+      }
+    },
+    "dnsRawResponse" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Raw Response (HEX)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "原始响应（HEX）"
+          }
+        }
+      }
+    },
+    "dnsRecordType" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Record type"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "记录类型"
+          }
+        }
+      }
+    },
+    "dnsResult" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Query Result"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "查询结果"
+          }
+        }
+      }
+    },
+    "dnsResultHint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Results come from the specified resolver; DNSSEC is not validated. TTL is in seconds; CLASS1 means Internet. AA means authoritative; RA means recursion available. Queries and results remain only in page memory."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "结果由指定服务器返回，未验证 DNSSEC。TTL 单位为秒；CLASS1 为 Internet。AA 为权威回答，RA 为支持递归。查询及结果仅保留在当前页面内存中。"
+          }
+        }
+      }
+    },
+    "dnsServer" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolver IP"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解析服务器 IP"
+          }
+        }
+      }
+    },
+    "dnsStatus" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Response status"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "响应状态"
+          }
+        }
+      }
+    },
+    "dnsTransport" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transport"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "传输协议"
           }
         }
       }
@@ -681,9 +1389,6 @@
           }
         }
       }
-    },
-    "English" : {
-
     },
     "error" : {
       "extractionState" : "manual",
@@ -787,6 +1492,40 @@
         }
       }
     },
+    "error.dnsMalformed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The resolver returned an invalid, incomplete, or oversized DNS response."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务器返回了无效、不完整或超出限制的 DNS 响应。"
+          }
+        }
+      }
+    },
+    "error.dnsMismatch" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The DNS response does not match the query."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DNS 响应与查询不匹配。"
+          }
+        }
+      }
+    },
     "error.emptyPayload" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -817,6 +1556,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "文件超过允许的大小或条目数量。"
+          }
+        }
+      }
+    },
+    "error.invalidDNSQuery" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Invalid DNS query. Use an ASCII/Punycode name (up to 63 bytes per label), or a PTR address; check the port."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DNS 查询无效。请使用 ASCII/Punycode 域名（每段不超过 63 字节），或输入 PTR 地址；检查端口。"
           }
         }
       }
@@ -1110,6 +1866,23 @@
         }
       }
     },
+    "error.tls" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TLS handshake failed. Check the server certificate, server name, and TLS configuration."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TLS 握手失败。请检查服务器证书、服务器名称及 TLS 配置。"
+          }
+        }
+      }
+    },
     "error.unicastOnly" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1246,6 +2019,23 @@
         }
       }
     },
+    "event.reconnecting" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto reconnect scheduled"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已安排自动重连"
+          }
+        }
+      }
+    },
     "event.remoteClosed" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1310,6 +2100,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在启动"
+          }
+        }
+      }
+    },
+    "event.tlsConnected" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TLS handshake completed; secure connection established"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "TLS 握手已完成，安全连接已建立"
           }
         }
       }
@@ -1501,9 +2308,6 @@
         }
       }
     },
-    "HEX" : {
-
-    },
     "host" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1623,9 +2427,6 @@
         }
       }
     },
-    "JSON" : {
-
-    },
     "language" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1694,6 +2495,23 @@
         }
       }
     },
+    "localHostSummary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Local Host"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "本地主机"
+          }
+        }
+      }
+    },
     "localPort" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1711,6 +2529,57 @@
         }
       }
     },
+    "logDirection" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direction"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "方向"
+          }
+        }
+      }
+    },
+    "logHexData" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data (HEX)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据（HEX）"
+          }
+        }
+      }
+    },
+    "logLength" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Length"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "长度"
+          }
+        }
+      }
+    },
     "logLimitDescription" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -1724,6 +2593,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每会话最多保留 5,000 条记录或 30 MiB 载荷，达到上限会淘汰最早记录。"
+          }
+        }
+      }
+    },
+    "logTextData" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Data (UTF-8)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "数据（UTF-8）"
+          }
+        }
+      }
+    },
+    "logTextPreview" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text Preview"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文本预览"
+          }
+        }
+      }
+    },
+    "logTime" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "时间"
           }
         }
       }
@@ -3156,8 +4076,22 @@
         }
       }
     },
-    "NetDock" : {
-
+    "networkWorkbench" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Network Workbench"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "网络工作台"
+          }
+        }
+      }
     },
     "newSession" : {
       "extractionState" : "manual",
@@ -3414,9 +4348,6 @@
         }
       }
     },
-    "PID" : {
-
-    },
     "position" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3457,13 +4388,30 @@
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No account or cloud sync. Traffic goes only to addresses you specify. Raw traffic logs stay in memory and clear on exit."
+            "value" : "No account or cloud sync. Raw traffic logs stay in memory and clear on exit unless you export them."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "无需账号，无云同步。仅向您指定的地址通信。原始通信日志只保存在内存中，退出后清除。"
+            "value" : "无需账号，无云同步。原始通信日志默认保存在内存中，退出后清除。您可以主动导出日志。"
+          }
+        }
+      }
+    },
+    "privacyPolicy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacy Policy"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隐私政策"
           }
         }
       }
@@ -3621,9 +4569,6 @@
         }
       }
     },
-    "RX" : {
-
-    },
     "save" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3756,6 +4701,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "发送"
+          }
+        }
+      }
+    },
+    "sendData" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Send Data"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "发送数据"
           }
         }
       }
@@ -3896,6 +4858,23 @@
         }
       }
     },
+    "sessionDetails" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Session Details"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "会话详情"
+          }
+        }
+      }
+    },
     "sessions" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -3981,23 +4960,6 @@
         }
       }
     },
-    "startingListening" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Starting Listener"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在启动监听"
-          }
-        }
-      }
-    },
     "startListening" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4045,6 +5007,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "启动收发"
+          }
+        }
+      }
+    },
+    "startingListening" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starting Listener"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在启动监听"
           }
         }
       }
@@ -4130,6 +5109,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已连接"
+          }
+        }
+      }
+    },
+    "state.reconnecting" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Waiting to reconnect"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "等待重连"
           }
         }
       }
@@ -4270,9 +5266,6 @@
         }
       }
     },
-    "SYS" : {
-
-    },
     "system" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4324,6 +5317,57 @@
         }
       }
     },
+    "tlsEnabled" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use TLS"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 TLS"
+          }
+        }
+      }
+    },
+    "tlsHint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use TLS 1.2 or later with system certificate-chain and hostname validation. An explicit name is used for both SNI and certificate verification. TCP Client only."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 TLS 1.2 或更高版本。系统验证证书链和服务器名称；指定名称同时用于 SNI 和证书验证。仅支持 TCP Client。"
+          }
+        }
+      }
+    },
+    "tlsServerName" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Server name (defaults to connection host)"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "服务器名称（留空使用连接主机）"
+          }
+        }
+      }
+    },
     "tools" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4337,19 +5381,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "工具"
-          }
-        }
-      }
-    },
-    "TX" : {
-
-    },
-    "TX %llu · RX %llu B" : {
-      "localizations" : {
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "TX %1$llu · RX %2$llu B"
           }
         }
       }
@@ -4439,9 +5470,6 @@
         }
       }
     },
-    "UTF-8" : {
-
-    },
     "utf8" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -4493,8 +5521,37 @@
         }
       }
     },
+    "—" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "—"
+          }
+        }
+      }
+    },
     "简体中文" : {
-
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "简体中文"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "简体中文"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

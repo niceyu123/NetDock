@@ -18,6 +18,7 @@ public struct TrafficSnapshot: Sendable {
 public final class SessionTrafficStore: @unchecked Sendable {
     private let lock = NSLock()
     private let sessionID: UUID
+    private let mode: SessionMode
     private let protocolKind: TrafficRecord.ProtocolKind
     private var buffer: TrafficBuffer
     private var state: ConnectionState = .idle
@@ -26,28 +27,29 @@ public final class SessionTrafficStore: @unchecked Sendable {
     private var receivedBytes: UInt64 = 0
     private var sentPackets: UInt64 = 0
     private var receivedPackets: UInt64 = 0
-    private var connectedSince: Date?
+    private let clock = ContinuousClock()
+    private var connectedSince: ContinuousClock.Instant?
     private var duration: TimeInterval = 0
     private var lastError: NetDockError?
     private var listeningPort: UInt16?
     private var localEndpoint: String?
     private var dirty = true
-    private var lastSnapshotDate = Date.distantPast
+    private var lastSnapshotTime: ContinuousClock.Instant?
 
     public init(sessionID: UUID, mode: SessionMode = .tcpClient, maxEntries: Int = 5_000, maxBytes: Int = 30 * 1_024 * 1_024) {
-        self.sessionID = sessionID; protocolKind = mode.isUDP ? .udp : .tcp
+        self.sessionID = sessionID; self.mode = mode; protocolKind = mode.isUDP ? .udp : .tcp
         buffer = TrafficBuffer(maxEntries: maxEntries, maxBytes: maxBytes)
     }
 
     public func ingest(_ event: NetworkEvent) {
         lock.lock(); defer { lock.unlock() }; dirty = true
+        let now = clock.now
         switch event {
         case .stateChanged(let state):
-            if protocolKind == .tcp {
-                if state == .ready, connectedSince == nil { connectedSince = .now }
-                if !state.isActive, let since = connectedSince {
-                    duration += Date().timeIntervalSince(since); connectedSince = nil
-                }
+            if mode == .tcpClient && state == .ready {
+                if connectedSince == nil { connectedSince = now }
+            } else if mode != .tcpServer || state != .listening {
+                finishConnectedInterval(at: now)
             }
             self.state = state
             if state == .connecting || state == .starting { lastError = nil; listeningPort = nil; localEndpoint = nil }
@@ -57,11 +59,15 @@ public final class SessionTrafficStore: @unchecked Sendable {
         case .listening(let port): listeningPort = port
         case .localEndpoint(let endpoint): localEndpoint = endpoint
         case .peerJoined(let info):
+            if mode == .tcpServer, state == .listening, peers.isEmpty, connectedSince == nil {
+                connectedSince = now
+            }
             peers[info.id] = info
             buffer.append(TrafficRecord(sessionID: sessionID, remoteEndpoint: info.endpoint,
                 localEndpoint: info.localEndpoint, messageKey: protocolKind == .udp ? "event.sourceAdded" : "event.peerJoined", protocolKind: protocolKind))
         case .peerLeft(let id):
             if let info = peers.removeValue(forKey: id) {
+                if mode == .tcpServer && peers.isEmpty { finishConnectedInterval(at: now) }
                 buffer.append(TrafficRecord(sessionID: sessionID, remoteEndpoint: info.endpoint,
                     localEndpoint: info.localEndpoint, messageKey: protocolKind == .udp ? "event.sourceRemoved" : "event.peerLeft", protocolKind: protocolKind))
             }
@@ -88,15 +94,25 @@ public final class SessionTrafficStore: @unchecked Sendable {
     }
     public func takeSnapshot() -> TrafficSnapshot? {
         lock.lock(); defer { lock.unlock() }
-        guard dirty || (connectedSince != nil && Date().timeIntervalSince(lastSnapshotDate) >= 1) else { return nil }
-        dirty = false; lastSnapshotDate = .now
+        let now = clock.now
+        guard dirty || (connectedSince != nil && (lastSnapshotTime.map { $0.duration(to: now) >= .seconds(1) } ?? true)) else { return nil }
+        dirty = false; lastSnapshotTime = now
         return TrafficSnapshot(state: state, records: buffer.records,
             peers: peers.values.sorted { $0.connectedAt < $1.connectedAt },
             sentBytes: sentBytes, receivedBytes: receivedBytes, sentPackets: sentPackets, receivedPackets: receivedPackets,
-            connectedDuration: duration + (connectedSince.map { Date().timeIntervalSince($0) } ?? 0),
+            connectedDuration: duration + (connectedSince.map { seconds(from: $0, to: now) } ?? 0),
             lastError: lastError, listeningPort: listeningPort, localEndpoint: localEndpoint)
     }
     public func clear() { lock.lock(); buffer.removeAll(); dirty = true; lock.unlock() }
+    /// Count the union of TCP peer lifetimes, using a monotonic clock.
+    private func finishConnectedInterval(at now: ContinuousClock.Instant) {
+        guard let since = connectedSince else { return }
+        duration += seconds(from: since, to: now); connectedSince = nil
+    }
+    private func seconds(from start: ContinuousClock.Instant, to end: ContinuousClock.Instant) -> TimeInterval {
+        let elapsed = start.duration(to: end).components
+        return Double(elapsed.seconds) + Double(elapsed.attoseconds) / 1_000_000_000_000_000_000
+    }
     private func append(_ transfer: Transfer, direction: TrafficRecord.Direction) {
         buffer.append(TrafficRecord(sessionID: sessionID, timestamp: transfer.timestamp, direction: direction,
             payload: transfer.payload, remoteEndpoint: transfer.remoteEndpoint, localEndpoint: transfer.localEndpoint, protocolKind: protocolKind))

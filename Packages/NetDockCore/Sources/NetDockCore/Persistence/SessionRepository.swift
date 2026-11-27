@@ -36,7 +36,7 @@ public struct SessionRepository: Sendable {
 
     public func save(_ sessions: [SessionConfig]) throws {
         do {
-            try validate(sessions)
+            let sessions = try validate(sessions)
             try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
             let encoder = JSONEncoder(); encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
             let data = try encoder.encode(SessionDocument(sessions: sessions))
@@ -56,12 +56,11 @@ public struct SessionRepository: Sendable {
         do { document = try JSONDecoder().decode(SessionDocument.self, from: data) }
         catch { throw NetDockError(.corruptStorage, detail: String(describing: error)) }
         guard document.schemaVersion == 1 else { throw NetDockError(.schemaVersion) }
-        try validate(document.sessions)
-        return document.sessions
+        return try validate(document.sessions)
     }
 
-    private func validate(_ sessions: [SessionConfig]) throws {
+    private func validate(_ sessions: [SessionConfig]) throws -> [SessionConfig] {
         guard Set(sessions.map(\.id)).count == sessions.count else { throw NetDockError(.corruptStorage) }
-        for session in sessions { _ = try session.validated() }
+        return try sessions.map { try $0.validated() }
     }
 }

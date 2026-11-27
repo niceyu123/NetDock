@@ -17,38 +17,46 @@ struct LogView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            ViewThatFits(in: .horizontal) {
-                HStack { logTitle; Spacer(); encodingPicker; logActions }
-                HStack { encodingPicker; Spacer(); logActions }
-            }.padding(.horizontal, 12).padding(.vertical, 8)
-            HStack {
-                TextField(app.t("searchLogs"), text: $search).textFieldStyle(.roundedBorder)
-                    .accessibilityIdentifier("logSearch")
-                Menu {
-                    Button(app.t("allDirections")) { direction = nil }
-                    Button("TX") { direction = .tx }; Button("RX") { direction = .rx }; Button("SYS") { direction = .system }
-                } label: { Label(direction?.rawValue ?? app.t("allDirections"), systemImage: "line.3.horizontal.decrease") }
-                    .accessibilityIdentifier("logDirection")
-            }.padding(.horizontal, 12).padding(.bottom, 8)
-            Divider()
-            ScrollViewReader { proxy in
-                List(visibleRecords) { record in
-                    LogRow(record: record, encoding: runtime.config.displayEncoding, onReply: runtime.config.mode == .udpServer && record.direction == .rx ? {
-                        if let source = runtime.peers.first(where: { $0.endpoint == record.remoteEndpoint }) {
-                            runtime.target = source.id; runtime.explicitUDPTarget = false
-                        } else { runtime.inputError = NetDockError(.peerMissing) }
-                    } : nil).id(record.id)
-                }
-                .listStyle(.plain).accessibilityIdentifier("trafficLog")
-                .overlay {
-                    if visibleRecords.isEmpty {
-                        ContentUnavailableView(app.t(runtime.records.isEmpty ? "noTraffic" : "noMatchingLogs"), systemImage: "text.alignleft",
-                                               description: Text(app.t(runtime.config.mode.isUDP ? "udpHint" : "tcpStreamHint")))
+        GeometryReader { geometry in
+            let columns = geometry.size.width >= 700
+            VStack(spacing: 0) {
+                ViewThatFits(in: .horizontal) {
+                    HStack(spacing: 12) {
+                        logTitle; Spacer(minLength: 8); directionPicker; encodingPicker; logActions
+                        searchField.frame(width: 150)
                     }
-                }
-                .onChange(of: runtime.records.last?.id) { _, id in
-                    if runtime.config.autoScroll, let id { proxy.scrollTo(id, anchor: .bottom) }
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack { logTitle; Spacer(); encodingPicker; logActions }
+                        HStack { directionPicker; searchField }
+                    }
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack { logTitle; Spacer(); logActions }
+                        HStack { directionPicker; encodingPicker; Spacer(minLength: 0) }
+                        searchField
+                    }
+                }.padding(12)
+                if columns { columnHeader }
+                Divider()
+                ScrollViewReader { proxy in
+                    List(visibleRecords) { record in
+                        LogRow(record: record, columns: columns, encoding: runtime.config.displayEncoding, onReply: runtime.config.mode == .udpServer && record.direction == .rx ? {
+                            if let source = runtime.peers.first(where: { $0.endpoint == record.remoteEndpoint }) {
+                                runtime.target = source.id; runtime.explicitUDPTarget = false
+                            } else { runtime.inputError = NetDockError(.peerMissing) }
+                        } : nil).id(record.id)
+                            .listRowInsets(EdgeInsets(top: 4, leading: 20, bottom: 4, trailing: 20))
+                    }
+                    .listStyle(.plain).scrollContentBackground(.hidden)
+                    .accessibilityIdentifier("trafficLog")
+                    .overlay {
+                        if visibleRecords.isEmpty {
+                            ContentUnavailableView(app.t(runtime.records.isEmpty ? "noTraffic" : "noMatchingLogs"), systemImage: "text.alignleft",
+                                                   description: Text(app.t(runtime.config.mode.isUDP ? "udpHint" : "tcpStreamHint")))
+                        }
+                    }
+                    .onChange(of: runtime.records.last?.id) { _, id in
+                        if runtime.config.autoScroll, let id { proxy.scrollTo(id, anchor: .bottom) }
+                    }
                 }
             }
         }
@@ -56,6 +64,39 @@ struct LogView: View {
             if case .failure(let error) = result { runtime.inputError = NetDockError(.storage, detail: error.localizedDescription) }
         }
     }
+    private var searchField: some View {
+        TextField(app.t("searchLogs"), text: $search)
+            .textFieldStyle(.roundedBorder)
+            .accessibilityLabel(app.t("searchLogs")).accessibilityIdentifier("logSearch")
+    }
+
+    private var directionPicker: some View {
+        Picker(app.t("logDirection"), selection: $direction) {
+            Text(app.t("allDirections")).tag(Optional<TrafficRecord.Direction>.none)
+            Text("TX").tag(Optional(TrafficRecord.Direction.tx))
+            Text("RX").tag(Optional(TrafficRecord.Direction.rx))
+            Text("SYS").tag(Optional(TrafficRecord.Direction.system))
+        }
+        .labelsHidden().frame(width: 100)
+        .accessibilityLabel(app.t("logDirection")).accessibilityIdentifier("logDirection")
+    }
+
+    private var columnHeader: some View {
+        HStack(spacing: 12) {
+            Text(app.t("logTime")).frame(width: 112, alignment: .leading)
+            Text(app.t("logDirection")).frame(width: 44, alignment: .leading)
+            Text(app.t("logLength")).frame(width: 56, alignment: .leading)
+            Text(runtime.config.displayEncoding == .hex ? app.t("logHexData") : app.t("logTextData"))
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text(app.t("logTextPreview")).frame(width: 130, alignment: .leading)
+            Color.clear.frame(width: 18, height: 1)
+        }
+        .font(.caption).foregroundStyle(.secondary)
+        .padding(.horizontal, 20).padding(.vertical, 8)
+        .background(.quaternary.opacity(0.35))
+        .accessibilityIdentifier("logColumnHeader")
+    }
+
     private func prepareExport(json: Bool) {
         let records = visibleRecords
         preparingExport = true
@@ -69,14 +110,14 @@ struct LogView: View {
             } catch { runtime.inputError = (error as? NetDockError) ?? NetDockError(.storage) }
         }
     }
-    private var logTitle: some View { Text(app.t("logs")).font(.headline) }
+    private var logTitle: some View { Text(app.t("logs")).font(.headline).foregroundStyle(.tint) }
     private var encodingPicker: some View {
         Picker(app.t("displayEncoding"), selection: Binding(get: { runtime.config.displayEncoding }, set: {
             var config = runtime.config; config.displayEncoding = $0; app.save(config)
         })) {
             Text("UTF-8").tag(DataEncoding.utf8)
             Text("HEX").tag(DataEncoding.hex)
-        }.pickerStyle(.segmented).labelsHidden().frame(maxWidth: 170)
+        }.pickerStyle(.segmented).labelsHidden().frame(width: 135)
             .accessibilityLabel(app.t("displayEncoding")).accessibilityIdentifier("displayEncoding")
     }
     private var logActions: some View {
@@ -90,7 +131,12 @@ struct LogView: View {
             Toggle(isOn: Binding(get: { runtime.config.autoScroll }, set: {
                 var config = runtime.config; config.autoScroll = $0; app.save(config)
             })) { Label(app.t("autoScroll"), systemImage: "arrow.down.to.line") }
-                .toggleStyle(.button).labelStyle(.iconOnly).help(app.t("autoScroll"))
+                #if os(macOS)
+                .toggleStyle(.checkbox).labelStyle(.titleOnly)
+                #else
+                .toggleStyle(.button).labelStyle(.iconOnly)
+                #endif
+                .help(app.t("autoScroll"))
             Button { runtime.clearLogs() } label: { Label(app.t("clearLogs"), systemImage: "trash") }
                 .labelStyle(.iconOnly).help(app.t("clearLogs"))
                 .keyboardShortcut("l", modifiers: .command).accessibilityIdentifier("clearLogs")
@@ -101,11 +147,62 @@ struct LogView: View {
 private struct LogRow: View {
     @Environment(AppModel.self) private var app
     let record: TrafficRecord
+    var columns: Bool = false
     let encoding: DataEncoding
     var onReply: (() -> Void)?
     @State private var expanded = false
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 5) {
+            if columns {
+                HStack(spacing: 12) {
+                    Text(record.timestamp, format: .dateTime.hour().minute().second().secondFraction(.fractional(3)))
+                        .foregroundStyle(.secondary).frame(width: 112, alignment: .leading)
+                    Text(record.direction.rawValue).fontWeight(.semibold)
+                        .foregroundStyle(record.direction == .rx ? Color.green : record.direction == .tx ? .blue : .secondary)
+                        .frame(width: 44, alignment: .leading)
+                    Text(record.direction == .system ? "—" : "\(record.size) B")
+                        .foregroundStyle(.secondary).frame(width: 56, alignment: .leading)
+                    Text(summary).frame(maxWidth: .infinity, alignment: .leading).textSelection(.enabled)
+                    Text(preview).foregroundStyle(.secondary).frame(width: 130, alignment: .leading)
+                    Button { expanded.toggle() } label: {
+                        Label(app.t(expanded ? "collapse" : "showAllBytes"), systemImage: expanded ? "chevron.up" : "chevron.down")
+                    }
+                    .labelStyle(.iconOnly).buttonStyle(.borderless).frame(width: 18)
+                    .accessibilityIdentifier("expandLog.\(record.id)")
+                }.font(.callout.monospaced()).lineLimit(1)
+            }
+            if !columns || expanded {
+                recordDetails
+            }
+        }
+        .padding(.vertical, columns ? 3 : 5)
+        .contextMenu {
+            if let onReply { Button(app.t("replySource"), action: onReply) }
+            if let remote = record.remoteEndpoint { Button(app.t("copyEndpoint")) { Clipboard.copy(remote) } }
+            if !record.payload.isEmpty {
+                Button(app.t("copyHex")) { Clipboard.copy(PayloadCodec.hex(record.payload)) }
+                if let text = PayloadCodec.text(record.payload) {
+                    Button(app.t("copyText")) { Clipboard.copy(text) }
+                }
+            }
+        }
+    }
+
+    private var summary: String {
+        if let error = record.error { return app.errorText(error) }
+        if let key = record.messageKey { return app.t(key) }
+        let prefix = Data(record.payload.prefix(64))
+        if encoding == .hex { return PayloadCodec.hex(prefix) }
+        return PayloadCodec.text(record.payload).map { String($0.prefix(160)) } ?? app.t("invalidUTF8")
+    }
+
+    private var preview: String {
+        // Preview bytes without replacing the lossless payload or its full-detail view.
+        record.payload.prefix(40).map { (32...126).contains($0) ? String(UnicodeScalar($0)) : "·" }.joined()
+    }
+
+    private var recordDetails: some View {
         VStack(alignment: .leading, spacing: 5) {
             HStack(alignment: .firstTextBaseline) {
                 Text(record.timestamp, format: .dateTime.hour().minute().second().secondFraction(.fractional(6)))
@@ -129,17 +226,6 @@ private struct LogRow: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 if record.size > 512 {
                     Button(app.t(expanded ? "collapse" : "showAllBytes")) { expanded.toggle() }.font(.caption)
-                }
-            }
-        }
-        .padding(.vertical, 5)
-        .contextMenu {
-            if let onReply { Button(app.t("replySource"), action: onReply) }
-            if let remote = record.remoteEndpoint { Button(app.t("copyEndpoint")) { Clipboard.copy(remote) } }
-            if !record.payload.isEmpty {
-                Button(app.t("copyHex")) { Clipboard.copy(PayloadCodec.hex(record.payload)) }
-                if let text = PayloadCodec.text(record.payload) {
-                    Button(app.t("copyText")) { Clipboard.copy(text) }
                 }
             }
         }
