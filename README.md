@@ -1,12 +1,26 @@
 # NetDock · 网络工作台
 
-[English](README.en.md)
+[English](README.en.md) · [下载预发行版](https://github.com/niceyu123/NetDock/releases)
 
 免费开源的 Apple 原生网络调试工具。使用 Swift、SwiftUI、Network.framework，无第三方运行时依赖。
 
 当前已在原工程增量加入 **M2 UDP + M3 调试工作台**，并新增仅 macOS 可用的网络连接监控。真机局域网、最低系统版本和完整无障碍验收仍需补充，实际验证见测试记录。
 
-## 运行
+## 下载
+
+到 [GitHub Releases](https://github.com/niceyu123/NetDock/releases) 下载 macOS 预发行 ZIP。支持 **Apple 芯片 Mac（arm64）**，最低 macOS 14。此构建采用本地签名，尚未经过 Apple 公证。iPhone 和 iPad 可通过下文的 Xcode 方式构建运行。
+
+## 界面截图
+
+**iPad · TCP 调试工作台**
+
+![iPad 上的 NetDock，显示已连接的 TCP 会话、通信日志和发送区](docs/screenshots/ipad-tcp.png)
+
+| iPhone · TCP 收发 | macOS · 设置 |
+| --- | --- |
+| <img src="docs/screenshots/iphone-tcp.png" alt="iPhone 上的 TCP 发送和接收日志" width="260"> | <img src="docs/screenshots/macos-settings.png" alt="macOS 设置中的语言、外观和隐私政策" width="490"> |
+
+## 从源码运行
 
 macOS App 仅支持 Apple 芯片（arm64），不支持 Intel Mac。需要 Xcode 16 或更新版本及 Swift 6；本次实际使用 Xcode 27.1 / Swift 6.4。最低系统为 macOS 14、iOS/iPadOS 17。
 
@@ -21,11 +35,12 @@ open NetDock.xcodeproj
 ## 已实现
 
 - 独立会话的新建、编辑、复制、删除及本地 JSON 保存；切换会话不影响连接。
-- TCP Client：主机名/IPv4/IPv6，连接、断开、串行有界发送、持续接收、连接超时和分类错误。
+- TCP Client：主机名/IPv4/IPv6，连接、断开、串行有界发送、持续接收、连接超时和分类错误；可选 TLS 1.2+，系统证书与名称校验，可指定 SNI 服务器名称。
 - TCP Server：端口监听、多客户端接入、真实远端/本地端点、定向发送、广播给已连接客户端、独立断开；停止监听关闭已接入连接。
 - UDP Client / Server：IPv4/IPv6 单播、指定本地 IP/端口、实际端点、保持完整数据报、多来源定向回复和服务端指定目标发送；UDP 无连接语义。
-- 最低 100ms 周期发送、有限/连续次数、暂停/恢复/停止；停止会话、网络失败或移动端进入后台时取消。
+- 发送区直接设置周期发送间隔（最低 100ms），支持有限/连续次数、暂停/恢复/停止；停止会话、网络失败或移动端进入后台时取消。
 - 快捷指令保存/重命名/删除/复用、当前会话有界发送历史、日志查询和方向筛选、TXT/JSON 日志导出、JSON 会话配置导入导出。
+- DNS 查询：A／AAAA／CNAME／MX／NS／TXT／PTR／SOA，自定义单播解析服务器 IP 和端口；TTL、状态、回答／权威／附加记录、耗时、复制与原始响应。UDP 截断后回退 TCP，5 秒总超时，可取消。
 - macOS 原生 Table 网络连接监控：自动/暂停/手动刷新、搜索/过滤/排序、变更高亮、详情/复制、可见端口查询、CSV/JSON 导出；系统权限限制见 [监控说明](docs/connection-monitor.md)。
 - UTF-8 与 HEX 发送，HEX 空白与大小写容忍、错误字符位置；原始 `Data` 日志、微秒时间展示、TX/RX/SYS 区分、HEX 偏移、复制、清空、自动滚动。
 - 默认简体中文，应用内即时切换 English；跟随系统/浅色/深色，重启保留偏好。
@@ -65,7 +80,7 @@ UI 测试使用独立的 `NetDock-UITests` 目录和偏好，不替代真实网�
 
 无账号、云同步、广告、遥测或远程后台；网络数据只发送给用户指定的地址。iOS/iPadOS 包含中英局域网用途说明；系统权限弹窗语言由系统决定。移动端进入后台时主动停止全部会话，不保证后台监听，返回前台需手动启动。详见 [隐私说明](docs/privacy.md)。
 
-TCP 自动重连仍未实现，M4 继续做稳定性与发布准备。没有 DNS 查询、Ping、Traceroute、扫描、TLS 或其他扩展工具。正常 TCP 连接可由系统解析用户输入的主机名。
+TCP Client 已支持可选自动重连（默认关闭，在会话编辑页启用）：失败或断开后按 1／2／4／8／16／30 秒间隔重试，成功后重置；手动停止与移动端后台取消重试。不会重放数据或自动恢复周期发送。M4 继续做稳定性与发布准备。DNS 工具默认显式解析服务器为 1.1.1.1:53，可能受当前网络限制，可更换；与 TCP 连接所用的系统解析独立。DNS 域名支持 ASCII/Punycode，不验证 DNSSEC。TLS 仅支持 TCP Client，不提供跳过证书验证。Ping、Traceroute、扫描和 TLS Server 仍未实现。
 
 ## 设计与许可
 

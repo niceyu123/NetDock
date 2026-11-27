@@ -1,10 +1,24 @@
 # NetDock
 
-[简体中文](README.md)
+[简体中文](README.md) · [Download preview](https://github.com/niceyu123/NetDock/releases)
 
 A free, open-source, native Apple network workbench built with Swift, SwiftUI, and Network.framework. No third-party runtime dependencies.
 
 This increment adds **M2 UDP + M3 workbench features** and a macOS-only Connection Monitor to the existing native macOS and universal iPhone/iPad apps. See the testing record for actual verification and remaining physical-device checks.
+
+## Download
+
+The macOS preview ZIP is available on [GitHub Releases](https://github.com/niceyu123/NetDock/releases). It requires an **Apple silicon Mac (arm64)** with macOS 14 or later. The preview is locally signed and has not been notarized by Apple. Build and run the iPhone and iPad apps using Xcode.
+
+## Screenshots
+
+**iPad · TCP workspace**
+
+![NetDock on iPad showing a connected TCP session, traffic log, and send panel](docs/screenshots/ipad-tcp.png)
+
+| iPhone · TCP traffic | macOS · Settings |
+| --- | --- |
+| <img src="docs/screenshots/iphone-tcp.png" alt="TCP send and receive log on iPhone" width="260"> | <img src="docs/screenshots/macos-settings.png" alt="Language, appearance, and privacy settings on macOS" width="490"> |
 
 ## Build and run
 
@@ -18,7 +32,7 @@ The Xcode project is checked in. After adding files, regenerate it with `ruby Sc
 - TCP client with hostnames, IPv4/IPv6, ordered bounded sends, continuous receive, timeout, and categorized failures.
 - TCP server with multiple real clients, targeted sends, broadcast to connected clients, individual disconnect, and listener cleanup.
 - IPv4/IPv6 unicast UDP client/server with local binding, datagram boundaries, actual endpoints, per-source reply and explicit server destinations.
-- Periodic sending (100ms minimum), finite or continuous runs, pause/resume/stop, and cancellation on stop/background/failure.
+- Inline periodic sending controls with an editable interval (100ms minimum), finite or continuous runs, pause/resume/stop, and cancellation on stop/background/failure.
 - Named quick commands, bounded in-memory send history, log search/direction filtering, TXT/JSON log export and versioned session JSON import/export.
 - macOS Connection Monitor with a native Table, refresh/pause, filters/sorting, change highlights, details/copy, visible port queries and CSV/JSON export. Public API visibility restrictions are explained in [monitor notes](docs/connection-monitor.md).
 - UTF-8 and HEX input; precise HEX validation; lossless in-memory data records with TX/RX/SYS, timestamps, endpoints, HEX offsets, copy, clear, and auto-scroll.
@@ -37,8 +51,14 @@ Session configuration, saved commands and interface preferences stay local. Conf
 
 There are no accounts, cloud services, ads, telemetry, or remote backend. Network traffic goes to user-specified destinations. The sandboxed Mac app enables inbound and outbound networking. iOS includes localized Local Network usage descriptions. Mobile sessions stop on entering the background; no continuous background listener is promised.
 
-TCP automatic reconnect is still deferred. M4 covers stability and release preparation. This is not the complete V1 release. Physical-device networking and permissions must be checked separately from simulator tests.
+TCP Client supports optional automatic reconnect (off by default, enabled in the session editor). Retries use 1/2/4/8/16/30-second delays, reset after success, and cancel on manual stop or mobile background. Payloads and periodic sends are not replayed. M4 covers stability and release preparation. This is not the complete V1 release. Physical-device networking and permissions must be checked separately from simulator tests.
 
 The installed `apple-design` skill was inspected and found to target Web/CSS. Native layouts therefore follow [Apple HIG](https://developer.apple.com/design/human-interface-guidelines/layout), as required by the specification. See [design](docs/design.md), [architecture](docs/architecture.md), and [privacy](docs/privacy.md).
 
 Licensed under MIT, following the specification's recommendation. See [LICENSE](LICENSE).
+
+## DNS and TLS extension
+
+DNS lookup supports A, AAAA, CNAME, MX, NS, TXT, PTR and SOA with an explicit numeric unicast resolver and port (default 1.1.1.1:53), TTL, status, response sections, elapsed time, copying and raw HEX. Truncated UDP responses fall back to TCP within the same 5-second deadline. Names accept ASCII/Punycode; DNSSEC is not validated. Resolver reachability depends on the network.
+
+TCP Client supports optional TLS 1.2+ with system certificate and hostname validation, and an optional server name for SNI and certificate verification. Existing configurations keep TLS off. TLS Server and client certificate management are not implemented.
